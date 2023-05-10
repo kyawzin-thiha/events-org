@@ -1,0 +1,24 @@
+{
+  "name": "events-org",
+  "version": "1.0.0",
+  "description": "This is a simple and easy to use event organizing web-app built using Nextjs and Nest.js",
+  "scripts": {
+    "prepare": "husky install"
+  },
+  "keywords": [
+    "stripe",
+    "payment",
+    "webhooks",
+    "events"
+  ],
+  "author": "Kyaw Zin Thiha",
+  "license": "MIT",
+  "devDependencies": {
+    "husky": "^8.0.3",
+    "lint-staged": "^13.2.2",
+    "prettier": "^2.8.8"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,scss,md}": "prettier --write"
+  }
+}
