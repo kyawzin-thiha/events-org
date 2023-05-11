@@ -88,9 +88,9 @@ export class UserDbService {
         name: string,
         email: string,
         avatar: string,
-    ): Promise<ErrorDto> {
+    ): Promise<[UserDto, ErrorDto]> {
         try {
-            await this.prisma.user.upsert({
+            const user = await this.prisma.user.upsert({
                 where: {
                     uid,
                 },
@@ -106,9 +106,9 @@ export class UserDbService {
                     avatar,
                 },
             });
-            return null;
+            return [user, null];
         } catch (error) {
-            return { message: 'Internal Server Error', statusCode: 500 };
+            return [null, { message: 'Internal Server Error', statusCode: 500 }];
         }
     }
 
