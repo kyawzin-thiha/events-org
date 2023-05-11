@@ -25,6 +25,7 @@ model Event {
   slug      String   @unique
   excerpt   String
   content   String
+  thumbnail String
   tickets   Ticket[]
   ownerId   String
   owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)

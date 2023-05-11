@@ -12,11 +12,15 @@ async function bootstrap() {
     credentials: true,
   });
 
-  app.use(helmet());
+  app.use(helmet({
+    contentSecurityPolicy: false,
+  }));
   app.use(cookieParser(process.env.COOKIE_SECRET));
   app.use(compression());
 
   const PORT = process.env.PORT || 3001;
+
+  AppModule.setupSwagger(app);
 
   await app.listen(PORT, () =>
     console.log(`Server is running on port ${PORT}`),

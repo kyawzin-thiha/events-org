@@ -8,7 +8,7 @@ import { ErrorDto } from "src/types/error.dto";
 export class EventDbService {
     constructor(private readonly prisma: PrismaService) { }
 
-    async create(owner: string, name: string, slug: string, excerpt: string, content: string, tickets: { name: string, price: number }[]): Promise<[EventDetailDto, ErrorDto]> {
+    async create(owner: string, name: string, slug: string, excerpt: string, content: string, thumbnail: string, tickets: { name: string, price: number }[]): Promise<[EventDetailDto, ErrorDto]> {
         try {
             const event = await this.prisma.event.create({
                 data: {
@@ -16,6 +16,7 @@ export class EventDbService {
                     slug,
                     excerpt,
                     content,
+                    thumbnail,
                     owner: {
                         connect: {
                             id: owner
@@ -33,6 +34,9 @@ export class EventDbService {
             })
             return [event, null];
         } catch (error) {
+            if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+                return [null, { message: 'Duplicated event slug already exists', statusCode: 400 }];
+            }
             return [null, { message: 'Internal Server Error', statusCode: 500 }];
         }
     }
@@ -106,7 +110,20 @@ export class EventDbService {
         }
     }
 
-    async updateEvent(owner: string, event: string, name: string, slug: string, excerpt: string, content: string): Promise<ErrorDto> {
+    async getAllSlugs(): Promise<[string[], ErrorDto]> {
+        try {
+            const events = await this.prisma.event.findMany({
+                select: {
+                    slug: true
+                }
+            })
+            return [events.map(event => event.slug), null];
+        } catch (error) {
+            return [null, { message: 'Internal Server Error', statusCode: 500 }];
+        }
+    }
+
+    async update(owner: string, event: string, name: string, excerpt: string, content: string, thumbnail: string): Promise<ErrorDto> {
         try {
             await this.prisma.event.update({
                 where: {
@@ -117,9 +134,9 @@ export class EventDbService {
                 },
                 data: {
                     name,
-                    slug,
                     excerpt,
                     content,
+                    thumbnail
                 }
             })
             return null;
@@ -159,7 +176,30 @@ export class EventDbService {
                     }
                 })
             })
+
             await this.prisma.$transaction(upsertOperation);
+            return null;
+        } catch (error) {
+            console.log(error)
+            return { message: 'Internal Server Error', statusCode: 500 };
+        }
+    }
+
+    async deleteTicket(owner: string, event: string, tickets: string[]): Promise<ErrorDto> {
+        try {
+            await this.prisma.ticket.deleteMany({
+                where: {
+                    id: {
+                        in: tickets
+                    },
+                    event: {
+                        id: event,
+                        owner: {
+                            id: owner,
+                        }
+                    },
+                }
+            })
             return null;
         } catch (error) {
             return { message: 'Internal Server Error', statusCode: 500 };

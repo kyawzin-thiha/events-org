@@ -2,7 +2,9 @@ import { LocalAuthGuard } from 'src/guards/local.guard';
 import { AuthService } from './auth.service';
 import { Controller, Get, Post, Request, Response, UseGuards } from '@nestjs/common';
 import { FirebaseAuthGuard } from 'src/guards/firebase.guard';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags("Auth Module")
 @Controller('auth')
 export class AuthController {
     constructor(private readonly authService: AuthService) { }
