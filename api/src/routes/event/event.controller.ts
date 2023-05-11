@@ -15,7 +15,7 @@ import {
 } from '@nestjs/common';
 import { EventService } from './event.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiCookieAuth, ApiTags } from '@nestjs/swagger';
 import { LocalAuthGuard } from 'src/guards/local.guard';
 
 @ApiTags('Events Module')
@@ -25,6 +25,22 @@ export class EventController {
 
     @UseGuards(LocalAuthGuard)
     @Post('create')
+    @ApiCookieAuth()
+    @ApiConsumes('multipart/form-data')
+    @ApiBody({
+        description: 'Create new event',
+        schema: {
+            type: 'object',
+            properties: {
+                name: { type: 'string' },
+                slug: { type: 'string' },
+                excerpt: { type: 'string' },
+                content: { type: 'string' },
+                tickets: { type: 'string' },
+                thumbnail: { type: 'string', format: 'binary' },
+            },
+        },
+    })
     @UseInterceptors(FileInterceptor('thumbnail'))
     async createEvent(
         @Request() req,
@@ -80,6 +96,23 @@ export class EventController {
     @UseGuards(LocalAuthGuard)
     @Put('update/:id')
     @UseInterceptors(FileInterceptor('thumbnail'))
+    @ApiCookieAuth()
+    @ApiConsumes('multipart/form-data')
+    @ApiBody({
+        description: 'Create new event',
+        schema: {
+            type: 'object',
+            properties: {
+                name: { type: 'string' },
+                slug: { type: 'string' },
+                excerpt: { type: 'string' },
+                content: { type: 'string' },
+                tickets: { type: 'string' },
+                thumbnail: { type: 'string' },
+                newThumbnail: { type: 'string', format: 'binary' },
+            },
+        },
+    })
     async updateEvent(
         @Request() req,
         @Param('id') id: string,
@@ -111,9 +144,35 @@ export class EventController {
 
     @UseGuards(LocalAuthGuard)
     @Put('update-tickets/:id')
+    @ApiCookieAuth()
+    @ApiBody({
+        description: 'Update tickets',
+        schema: {
+            type: 'object',
+            properties: {
+                tickets: {
+                    type: 'array',
+                    items: {
+                        type: 'object',
+                        properties: {
+                            id: { type: 'string' },
+                            name: { type: 'string' },
+                            price: { type: 'number' },
+                        },
+                    },
+                },
+                deleteTickets: {
+                    type: 'array',
+                    items: {
+                        type: 'string',
+                    },
+                },
+            },
+        },
+    })
     async updateTickets(
         @Request() req,
-        @Param("id") id: string,
+        @Param('id') id: string,
         @Body()
         data: {
             tickets: { id?: string; name: string; price: number }[];
@@ -132,6 +191,7 @@ export class EventController {
 
     @UseGuards(LocalAuthGuard)
     @Delete('delete/:id')
+    @ApiCookieAuth()
     async deleteEvent(@Request() req, @Param('id') id: string) {
         const { id: owner } = req.user;
         return await this.eventService.deleteEvent(owner, id);

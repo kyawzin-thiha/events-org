@@ -2,7 +2,7 @@ import { LocalAuthGuard } from 'src/guards/local.guard';
 import { AuthService } from './auth.service';
 import { Controller, Get, Post, Request, Response, UseGuards } from '@nestjs/common';
 import { FirebaseAuthGuard } from 'src/guards/firebase.guard';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiCookieAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 @ApiTags("Auth Module")
 @Controller('auth')
@@ -17,6 +17,7 @@ export class AuthController {
 
     @UseGuards(FirebaseAuthGuard)
     @Post('login')
+    @ApiOperation({ summary: "Login with Firebase" })
     async login(@Request() req, @Response({ passthrough: true }) res) {
         const firebaseUser = req.firebaseUser;
         const user = await this.authService.login(
@@ -48,6 +49,7 @@ export class AuthController {
 
     @UseGuards(LocalAuthGuard)
     @Get('/user')
+    @ApiCookieAuth()
     async getUser(@Request() req) {
         const { id } = req.user;
 
