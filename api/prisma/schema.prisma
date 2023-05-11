@@ -1,0 +1,53 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["extendedWhereUnique", "jsonProtocol"]
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid()) @map("_id")
+  uid       String   @unique
+  name      String
+  email     String   @unique
+  avatar    String
+  events    Event[]
+  orders    Order[]
+  createdAt DateTime @default(now())
+}
+
+model Event {
+  id        String   @id @default(cuid()) @map("_id")
+  name      String
+  slug      String   @unique
+  excerpt   String
+  content   String
+  tickets   Ticket[]
+  ownerId   String
+  owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  orders    Order[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Ticket {
+  id        String   @id @default(cuid()) @map("_id")
+  name      String
+  price     Float    @default(0.00)
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model Order {
+  id        String   @id @default(cuid()) @map("_id")
+  eventId   String?
+  event     Event?   @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  ownerId   String
+  owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  ticket    String
+  createdAt DateTime @default(now())
+}
